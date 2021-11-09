@@ -40,8 +40,8 @@ case $opcao in
 	3) unblock ;;
 	4) unblockall ;;
 	sisuisthebestdragon) sisu ;;
-	menu
 esac
+menu
 }
 
 block(){
