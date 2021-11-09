@@ -1,4 +1,4 @@
-# blockdragon
+# Block Dragon, A Website Blocker For VPN Servers
 
 How to use?
 
