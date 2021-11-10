@@ -2,17 +2,31 @@
 #Scripiter Penguin
 #
 menu(){
-FILE=sites.cake
+FILE3=/etc/blockdragon
+if [ -d "$FILE3" ]; then
+clear
+else
+sudo mkdir /etc/blockdragon
+chmod 777 /etc/blockdragon
+fi
+FILE4=/etc/blockdragon/blocks
+if [ -d "$FILE4" ]; then
+clear
+else
+sudo mkdir /etc/blockdragon/blocks
+chmod 777 /etc/blockdragon/blocks
+fi
+FILE=/etc/blockdragon/sites.cake
 if [ -f "$FILE" ]; then
 clear
 else
-touch sites.cake
+sudo touch /etc/blockdragon/sites.cake
 fi
-FILE2=dragon.block
+FILE2=/etc/blockdragon/dragon.block
 if [ -f "$FILE2" ]; then
 clear
 else
-touch dragon.block
+sudo touch /etc/blockdragon/dragon.block
 fi
 black='\033[0;30m'
 red='\033[0;31m'
@@ -36,7 +50,7 @@ tput setaf 2 ; tput bold ; printf '%s' "|1|"; tput setaf 6 ; printf '%s' " Block
 tput setaf 2 ; tput bold ; printf '%s' "|2|"; tput setaf 6 ; printf '%s' " View List" ;  echo ""
 tput setaf 2 ; tput bold ; printf '%s' "|3|"; tput setaf 6 ; printf '%s' " Unblock Website" ;  echo ""
 tput setaf 2 ; tput bold ; printf '%s' "|4|"; tput setaf 6 ; printf '%s' " Unblock ALL" ;  echo ""
-tput setaf 2 ; tput bold ; printf '%s' "|4|"; tput setaf 6 ; printf '%s' " Reblock ALL (IF the server is rebooted) " ;  echo ""
+tput setaf 2 ; tput bold ; printf '%s' "|5|"; tput setaf 6 ; printf '%s' " Reblock ALL (IF the server is rebooted) " ;  echo ""
 echo ""
 tput setaf 7 ; tput setab 4 ; tput bold ; printf '%30s%s%-10s\n' "Select a Option" ; tput sgr0 ; echo ""
 echo -n "> "
@@ -78,7 +92,7 @@ sleep 3
 block
 else
 clear
-cat sites.cake | grep $website && site=1 || site=0
+cat /etc/blockdragon/sites.cake | grep $website && site=1 || site=0
 clear
 if [ "$site" = "1" ]; then
 clear
@@ -89,8 +103,10 @@ sleep 3
 block
 elif [ "$site" = "0" ]; then
 sudo iptables -A INPUT -s $website -j DROP && sudo iptables -A FORWARD -s $website  -j DROP
-echo "$website" >> sites.cake
-echo "iptables -A INPUT -s $website -j DROP && sudo iptables -A FORWARD -s $website  -j DROP" >> dragon.block
+echo "$website" >> /etc/blockdragon/sites.cake
+echo "/etc/blockdragon/blocks/$website" >> /etc/blockdragon/dragon.block
+echo "sudo iptables -A INPUT -s $website -j DROP && sudo iptables -A FORWARD -s $website  -j DROP" >> /etc/blockdragon/blocks/$website
+chmod +x /etc/blockdragon/blocks/$website
 clear
 echo ""
 echo ""
@@ -139,7 +155,7 @@ sleep 3
 unblock
 else
 clear
-cat sites.cake | grep $website && site=1 || site=0
+cat /etc/blockdragon/sites.cake | grep $website && site=1 || site=0
 clear
 if [ "$site" = "0" ]; then
 clear
@@ -150,8 +166,9 @@ sleep 3
 unblock
 elif [ "$site" = "1" ]; then
 sudo iptables -D INPUT -s $website -j DROP && sudo iptables -D FORWARD -s $website  -j DROP
-grep -v "$website" sites.cake > temp && mv temp sites.cake
-grep -v "iptables -A INPUT -s $website -j DROP && sudo iptables -A FORWARD -s $website  -j DROP" dragon.block > temp && mv temp dragon.block
+sed --in-place "/$website/d" /etc/blockdragon/sites.cake
+sed --in-place "/$website/d" /etc/blockdragon/dragon.block
+rm -f /etc/blockdragon/blocks/$website
 clear
 echo ""
 echo ""
@@ -181,7 +198,7 @@ clear
 echo ""
 tput setaf 7 ; tput setab 4 ; tput bold ; printf '%30s%s%-10s\n' "SITES BLOCKED ↓" ; tput sgr0 ; echo ""
 printf "${green}"
-cat sites.cake
+cat /etc/blockdragon/sites.cake
 printf "${white}"
 echo ""
 tput setaf 7 ; tput setab 4 ; tput bold ; printf '%30s%s%-10s\n' "SITES BLOCKED ↑ " ; tput sgr0 ; echo ""
@@ -227,17 +244,23 @@ menu
 
 unblockall()
 {
-FILE=sites.cake
+FILE=/etc/blockdragon/sites.cake
 if [ -f "$FILE" ]; then
 clear
 else
-touch sites.cake
+sudo touch /etc/blockdragon/sites.cake
 fi
-FILE2=dragon.block
+FILE2=/etc/blockdragon/dragon.block
 if [ -f "$FILE2" ]; then
 clear
 else
-touch dragon.block
+sudo touch /etc/blockdragon/dragon.block
+fi
+if [ -d "$FILE4" ]; then
+clear
+else
+sudo mkdir /etc/blockdragon/blocks
+chmod 777 /etc/blockdragon/blocks
 fi
 clear
 tput setaf 7 ; tput setab 4 ; tput bold ; printf '%30s%s%-10s\n' "UnBLOCK" ; tput sgr0 ; echo ""
@@ -258,8 +281,9 @@ if [ "$option2" = "Y" ]; then
 clear
 sudo iptables -F 
 tput setaf 7 ; tput setab 4 ; tput bold ; printf '%30s%s%-10s\n' "DONE" ; tput sgr0 ; echo ""
-rm -f sites.cake
-rm -f dragon.block
+rm -f /etc/blockdragon/sites.cake
+rm -f /etc/blockdragon/dragon.block
+rm -f -r /etc/blockdragon/blocks/
 sleep 3
 unblockall
 elif [ "$option2" = "N" ]; then 
@@ -282,8 +306,8 @@ fi
 
 reblockall()
 {
-chmod +x dragon.block
-./dragon.block
+chmod +x /etc/blockdragon/dragon.block
+/etc/blockdragon/dragon.block
 clear
 tput setaf 2 ; tput bold ; printf '%s' "|*|"; tput setaf 6 ; printf '%s' " REBLOCKED LIST" ; tput setaf 2 ; tput bold ; printf '%s' "|*|"; echo ""
 sleep 3
